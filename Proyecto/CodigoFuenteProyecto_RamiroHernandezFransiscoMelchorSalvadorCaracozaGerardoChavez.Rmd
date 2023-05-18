@@ -1,0 +1,92 @@
+---
+title: "Cadenas de Markov COVID-19"
+author: "Ramiro Hernandez, Fransisco Melchor, Salvador Caracoza, Gerardo Chávez"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(markovchain)
+```
+
+```{r}
+
+# Instalar y cargar los paquetes necesarios
+library(dplyr)
+library(readr)
+library(curl)
+library(markovchain)
+
+# Descargar y descomprimir el archivo ZIP
+url <- "https://datosabiertos.salud.gob.mx/gobmx/salud/datos_abiertos/datos_abiertos_covid19.zip"
+destfile <- "datos_abiertos_covid19.zip"
+curl_download(url, destfile)
+unzip(destfile, exdir = "datos_abiertos_covid19")
+
+# Leer el archivo CSV
+csv_file <- list.files("datos_abiertos_covid19", pattern = "*.csv", full.names = TRUE)
+covid_data <- read_csv(csv_file, col_types = cols())
+
+# Contar los registros existentes
+total_registros <- nrow(covid_data)
+cat("Total de registros: ", total_registros, "\n")
+
+# Contar los registros en la columna "FECHA_DEF" que sean diferentes a "9999-99-99"
+registros_fecha_def <- covid_data %>%
+  filter(FECHA_DEF != 9999-99-99) %>%
+  nrow()
+
+print(total_registros)
+print(registros_fecha_def)
+cat("Registros con fecha de defunción diferente a '9999-99-99': ", registros_fecha_def, "\n")
+
+Sanos <- 126014024 #Población de México según el INEGI al 2020
+Infectados <- total_registros 
+Muertos <- registros_fecha_def 
+Recuperados <- Infectados - Muertos
+
+TasaInfeccion <- Infectados/Sanos
+TasaRecuperacion <- Recuperados/Infectados
+TasaMuerte <-Muertos/Infectados
+
+TasaInfeccion
+TasaRecuperacion
+TasaMuerte
+
+# Crear una matriz de transición
+NombredeEstados3 = c("Sano","Infectados","Recuperados","Muertos")
+matrix_transicion <- new("markovchain", transitionMatrix = matrix(c(1 - TasaInfeccion, TasaInfeccion, 0, 0,
+ 0, 1 - TasaRecuperacion - TasaMuerte, TasaRecuperacion, TasaMuerte,
+ 0, 0, 1, 0,
+ 0, 0, 0, 1),  
+byrow = TRUE, nrow = 4, dimnames = list(NombredeEstados3, NombredeEstados3)))
+
+plot(matrix_transicion)
+
+summary(matrix_transicion)
+
+for (i in 1:100) {
+ # Defina el número de pasos de tiempo que desea simular
+n_pasos <- 100 #días
+
+# Simule la cadena de Markov
+simulacion <- rmarkovchain(n = n_pasos, object = matrix_transicion, t0 = "Sano")
+
+# Ver la simulación
+print(i)
+print(simulacion)
+}
+
+transitionProbability(object = matrix_transicion, t0 = "Sano", t1 = "Infectados")
+
+transitionProbability(object = matrix_transicion, t0 = "Infectados", t1 = "Recuperados")
+
+transitionProbability(object = matrix_transicion, t0 = "Infectados", t1 = "Muertos")
+```
+
+
