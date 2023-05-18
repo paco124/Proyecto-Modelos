@@ -9,7 +9,11 @@ Este proyecto se enfoca en el estudio, análisis y simulación de la propagació
   
   Utilizar el modelo para predecir como puede evolucionar la pandemia de Covid-19 en Mexico
 # Autores
-José Francisco Melchor Loera
-Ramiro Alejandro Hernandez Ortega
-Salvador Gerardo Caracoza Gamez
-Gerardo Roddrigo Chávez Cárcamo
+  José Francisco Melchor Loera
+  
+  Ramiro Alejandro Hernandez Ortega
+  
+  Salvador Gerardo Caracoza Gamez
+  
+  Gerardo Roddrigo Chávez Cárcamo
+  
